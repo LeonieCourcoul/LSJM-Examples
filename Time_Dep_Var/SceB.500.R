@@ -1,10 +1,10 @@
-### Script simulations - Scenario A - 1000
+### Script simulations - Scenario B - 500
 
 library(LSJM)
 library(dplyr)
 library(mvtnorm)
-
-gaussKronrod <- function (k = 15) {
+gaussKronrod <-
+  function (k = 15) {
     sk <- c(-0.949107912342758524526189684047851, -0.741531185599394439863864773280788, -0.405845151377397166906606412076961, 0,
             0.405845151377397166906606412076961, 0.741531185599394439863864773280788, 0.949107912342758524526189684047851, -0.991455371120812639206854697526329,
             -0.864864423359769072789712788640926, -0.586087235467691130294144838258730, -0.207784955007898467600689403773245, 0.207784955007898467600689403773245,
@@ -22,7 +22,7 @@ gaussKronrod <- function (k = 15) {
   }
 
 # Choices of parameters
-n <- 1000
+n <- 500
 ## longitudinal parameters
 beta0 <- 142
 beta1 <- 3
@@ -53,19 +53,25 @@ Gene_data <- function(n, beta0, beta1, B, M0,M1,
   data_long <- c()
   sk <- gaussKronrod()$sk
   wk <- gaussKronrod()$wk
-  t.max.event <- 6
+  t.max.event <- 5+1
   for(i in 1:n){
     ## longitudinal part
     random.effects <- rmvnorm(n=1, sigma = B)
     b0 <- random.effects[,1]; b1 <- random.effects[,2]
     omega0 <- random.effects[,3]; omega1 <- random.effects[,4]
     visit_i <- c(0)
-    visit_i <- c(visit_i, runif(1,5/12,7/12))
+    visit_i <- c(visit_i, runif(1,2/12,4/12))
+    visit_i <- c(visit_i, visit_i[length(visit_i)]+runif(1,2/12,4/12))
+    visit_i <- c(visit_i, visit_i[length(visit_i)]+runif(1,2/12,4/12))
+    visit_i <- c(visit_i, visit_i[length(visit_i)]+runif(1,2/12,4/12))
     visit_i <- c(visit_i, visit_i[length(visit_i)]+runif(1,5/12,7/12))
-    visit_i <- c(visit_i, visit_i[length(visit_i)]+runif(1,11/12,13/12))
-    visit_i <- c(visit_i, visit_i[length(visit_i)]+runif(1,11/12,13/12))
-    visit_i <- c(visit_i, visit_i[length(visit_i)]+runif(1,11/12,13/12))
-    visit_i <- c(visit_i, visit_i[length(visit_i)]+runif(1,11/12,13/12))
+    visit_i <- c(visit_i, visit_i[length(visit_i)]+runif(1,5/12,7/12))
+    visit_i <- c(visit_i, visit_i[length(visit_i)]+runif(1,5/12,7/12))
+    visit_i <- c(visit_i, visit_i[length(visit_i)]+runif(1,5/12,7/12))
+    visit_i <- c(visit_i, visit_i[length(visit_i)]+runif(1,5/12,7/12))
+    visit_i <- c(visit_i, visit_i[length(visit_i)]+runif(1,5/12,7/12))
+    visit_i <- c(visit_i, visit_i[length(visit_i)]+runif(1,5/12,7/12))
+    visit_i <- c(visit_i, visit_i[length(visit_i)]+runif(1,5/12,7/12))
     data_long_i <- as.data.frame(cbind(rep(i, length(visit_i)), # ID patient
                                        sort(visit_i))) # value of visit
     colnames(data_long_i) <- c("ID", "visit")
@@ -142,6 +148,7 @@ reason1 <- c()
 non_cvg2 <- 0
 list_noncv2 <- c()
 reason2 <- c()
+
 for(rep in 1:nb.simu){
   print(rep)
   echantillon <- Gene_data(n, beta0, beta1, B, M0,M1,
@@ -171,7 +178,8 @@ for(rep in 1:nb.simu){
                     epsa = 0.0001, epsb = 0.0001, epsd = 0.0001)
 
 
-  #save(lsjm.simu, file = paste("lsjm.simu_SceA.1000","_",rep,".RData",sep=""))
+  #save(lsjm.simu, file = paste("lsjm.simu_SceB.500","_",rep,".RData",sep=""))
+
 
   if(lsjm.simu$info_conv_step1$conv !=1){
     non_cvg1 <- non_cvg1+1

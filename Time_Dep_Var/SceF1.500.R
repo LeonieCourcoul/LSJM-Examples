@@ -1,10 +1,10 @@
-### Script simulations - Scenario A - 1000
+### Script simulations - Scenario F1 - 500
 
 library(LSJM)
 library(dplyr)
 library(mvtnorm)
-
-gaussKronrod <- function (k = 15) {
+gaussKronrod <-
+  function (k = 15) {
     sk <- c(-0.949107912342758524526189684047851, -0.741531185599394439863864773280788, -0.405845151377397166906606412076961, 0,
             0.405845151377397166906606412076961, 0.741531185599394439863864773280788, 0.949107912342758524526189684047851, -0.991455371120812639206854697526329,
             -0.864864423359769072789712788640926, -0.586087235467691130294144838258730, -0.207784955007898467600689403773245, 0.207784955007898467600689403773245,
@@ -22,104 +22,78 @@ gaussKronrod <- function (k = 15) {
   }
 
 # Choices of parameters
-n <- 1000
+n <- 500
 ## longitudinal parameters
 beta0 <- 142
 beta1 <- 3
-cholesky.globale <- matrix(c(14.4,0,0,0,-1.2,2.8,0,0,0,0,0.01,0,0,0,-0.06,0.11), ncol = 4, byrow = T)
+cholesky.globale <- matrix(c(14.5, 0,   0,
+                             -1.2, 2.8, 0,
+                             0,     0, 0.3), ncol = 3, byrow = T)
+
 B <- cholesky.globale%*%t(cholesky.globale)
 M0 <- 2.4
-M1 <- 0.05
 
 ## Survival parameters
 alpha0 <- -7
 alpha_sigma <- 0.07
 alpha_y <- 0.02
 alpha.slope <-0.01
-## Survival parameters Competing Risk
-alpha0.CR <- -4
-alpha_sigma.CR <- 0.15
-alpha_y.CR <- -0.01
-alpha.slope.CR <- -0.14
 
 shape_rac <- 1.1
-shape.CR_rac <- 1.3
 
-Gene_data <- function(n, beta0, beta1, B, M0,M1,
-                      alpha0, shape_rac, alpha_y, alpha_slope, alpha_sigma,
-                      alpha0.CR, shape.CR_rac, alpha_y.CR, alpha_slope.CR, alpha_sigma.CR){
+Gene_data <- function(n, beta0, beta1,  B, M0,
+                      alpha0, shape_rac, alpha_y, alpha_slope, alpha_sigma){
   shape <- shape_rac**2
-  shape.CR <- shape.CR_rac**2
   data_long <- c()
   sk <- gaussKronrod()$sk
   wk <- gaussKronrod()$wk
-  t.max.event <- 6
+  t.max.event <- 5+1
   for(i in 1:n){
     ## longitudinal part
     random.effects <- rmvnorm(n=1, sigma = B)
     b0 <- random.effects[,1]; b1 <- random.effects[,2]
-    omega0 <- random.effects[,3]; omega1 <- random.effects[,4]
+    omega0 <- random.effects[,3]
     visit_i <- c(0)
-    visit_i <- c(visit_i, runif(1,5/12,7/12))
+    visit_i <- c(visit_i, runif(1,2/12,4/12))
+    visit_i <- c(visit_i, visit_i[length(visit_i)]+runif(1,2/12,4/12))
+    visit_i <- c(visit_i, visit_i[length(visit_i)]+runif(1,2/12,4/12))
+    visit_i <- c(visit_i, visit_i[length(visit_i)]+runif(1,2/12,4/12))
     visit_i <- c(visit_i, visit_i[length(visit_i)]+runif(1,5/12,7/12))
-    visit_i <- c(visit_i, visit_i[length(visit_i)]+runif(1,11/12,13/12))
-    visit_i <- c(visit_i, visit_i[length(visit_i)]+runif(1,11/12,13/12))
-    visit_i <- c(visit_i, visit_i[length(visit_i)]+runif(1,11/12,13/12))
-    visit_i <- c(visit_i, visit_i[length(visit_i)]+runif(1,11/12,13/12))
+    visit_i <- c(visit_i, visit_i[length(visit_i)]+runif(1,5/12,7/12))
+    visit_i <- c(visit_i, visit_i[length(visit_i)]+runif(1,5/12,7/12))
+    visit_i <- c(visit_i, visit_i[length(visit_i)]+runif(1,5/12,7/12))
+    visit_i <- c(visit_i, visit_i[length(visit_i)]+runif(1,5/12,7/12))
+    visit_i <- c(visit_i, visit_i[length(visit_i)]+runif(1,5/12,7/12))
+    visit_i <- c(visit_i, visit_i[length(visit_i)]+runif(1,5/12,7/12))
+    visit_i <- c(visit_i, visit_i[length(visit_i)]+runif(1,5/12,7/12))
     data_long_i <- as.data.frame(cbind(rep(i, length(visit_i)), # ID patient
                                        sort(visit_i))) # value of visit
     colnames(data_long_i) <- c("ID", "visit")
-    sigma <- exp(M0 + omega0 + visit_i*(M1+omega1))
+    sigma <- exp(M0 + omega0)
     error <- rnorm(length(visit_i), sd = sigma)
     data_long_i$y <- beta0 + b0 + visit_i*(beta1+b1) + error
-
     ## survival part
     u1 <- runif(1); u2 <- runif(1)
 
     survInvS1 <- function(tstar){
       (tstar/2)*sum(shape*wk*(((tstar/2)*(sk+1))**(shape-1))*exp(alpha0 + alpha.slope*(beta1+b1)+(beta0 +b0)*alpha_y
                                                                  + alpha_y*(beta1+b1)*((tstar/2)*(sk+1))+
-                                                                   alpha_sigma*exp((M0+omega0)+(M1+omega1)*((tstar/2)*(sk+1))))) + log(u1)
+                                                                   alpha_sigma*exp((M0+omega0)))) + log(u1)
     }
     Root.1 <- try(expr = uniroot(survInvS1,
                                  interval = c(1e-05, t.max.event))$root,
                   silent = TRUE)
-    survInvS2 <- function(tstar){
-      (tstar/2)*sum(shape.CR*wk*(((tstar/2)*(sk+1))**(shape.CR-1))*exp(alpha0.CR + alpha.slope.CR*(beta1+b1)+(beta0 +b0)*alpha_y.CR
-                                                                       + alpha_y.CR*(beta1+b1)*((tstar/2)*(sk+1))+
-                                                                         alpha_sigma.CR*exp((M0+omega0)+(M1+omega1)*((tstar/2)*(sk+1))))) + log(u2)
-    }
-    Root.2 <- try(expr = uniroot(survInvS2,
-                                 interval = c(1e-05, t.max.event))$root,
-                  silent = TRUE)
 
-    if(inherits(Root.1, "try-error") & inherits(Root.2, "try-error")){
-      data_long_i$time <- t.max.event
+    if(inherits(Root.1, "try-error")){
+      data_long_i$time  <- t.max.event
       data_long_i$event <- 0
     }
     else{
-      if(inherits(Root.1, "try-error")){
-        data_long_i$time <- ifelse(Root.2 < t.max.event, Root.2, t.max.event)
-        data_long_i$event <- ifelse(Root.2 < t.max.event,2,0)
-      }
-      else{
-        if(inherits(Root.2, "try-error")){
-          data_long_i$time <- ifelse(Root.1 < t.max.event, Root.1, t.max.event)
-          data_long_i$event <- ifelse(Root.1 < t.max.event,1,0)
-        }
-        else{
-          if(Root.1 <= Root.2){
-            data_long_i$time <- ifelse(Root.1 < t.max.event, Root.1, t.max.event)
-            data_long_i$event<- ifelse(Root.1 < t.max.event,1,0)
-          }
-          if(Root.2 < Root.1){
-            data_long_i$time <- ifelse(Root.2 < t.max.event, Root.2, t.max.event)
-            data_long_i$event <- ifelse(Root.2 < t.max.event,2,0)
-          }
-        }
-      }
-
+      data_long_i$time <- ifelse(Root.1 < t.max.event, Root.1, t.max.event)
+      data_long_i$event <- ifelse(Root.1 < t.max.event,1,0)
     }
+
+
     data_long <- rbind(data_long, data_long_i)
 
   }
@@ -131,7 +105,8 @@ Gene_data <- function(n, beta0, beta1, B, M0,M1,
 }
 
 nb.simu <- 300
-nparam <- 26
+
+nparam <- 21
 estimateur.step1 <- matrix(NA, nrow = nb.simu, ncol = nparam)
 se.estimateur.step1 <- matrix(NA, nrow = nb.simu, ncol = nparam)
 estimateur.step2 <- matrix(NA, nrow = nb.simu, ncol = nparam)
@@ -144,34 +119,32 @@ list_noncv2 <- c()
 reason2 <- c()
 for(rep in 1:nb.simu){
   print(rep)
-  echantillon <- Gene_data(n, beta0, beta1, B, M0,M1,
-                           alpha0, shape_rac, alpha_y, alpha_slope, alpha_sigma,
-                           alpha0.CR, shape.CR_rac, alpha_y.CR, alpha_slope.CR, alpha_sigma.CR)
+  echantillon <- Gene_data(n, beta0, beta1,  B, M0,
+                           alpha0, shape_rac, alpha_y, alpha_slope, alpha_sigma)
   max.obs.visit <- 6
   echantillon$event <- ifelse(echantillon$time > max.obs.visit, 0, echantillon$event)
   echantillon$time <- ifelse(echantillon$time > max.obs.visit, max.obs.visit, echantillon$time)
-  echantillon$event1 <- NA
-  echantillon$event2 <- NA
-  echantillon$event1 <- ifelse(echantillon$event == 1, 1, 0)
-  echantillon$event2 <- ifelse(echantillon$event == 2, 1, 0)
 
   lsmm.simu <- lsmm(formFixed = y ~ visit , formRandom = ~ visit ,
                     formGroup = ~ ID,  timeVar = "visit", formVar = "cov-dependent",
                     formFixedVar = ~ visit  , formRandomVar = ~ visit, correlated_re = F,
                     data.long = echantillon, nproc = 2, print.info = F,  S1 = 500, S2 = 5000, maxiter = 500)
 
-  lsjm.simu <- lsjm(Objectlsmm = lsmm.simu, survival_type = 'CR',
+  lsjm.simu <- lsjm(Objectlsmm = lsmm.simu, survival_type = 'Single',
                     formSurv_01 = ~ 1, formSurv_02 = ~ 1,
-                    sharedtype_01 = c("value", "slope", "variability") ,
-                    sharedtype_02 = c("value","slope", "variability") ,
-                    hazardBase_01 = "Weibull",   hazardBase_02 = "Weibull",
-                    formSlopeFixed = ~ 1, formSlopeRandom = ~ 1, index_beta_slope = c(2),
-                    index_b_slope = c(2),  delta1 = ~ event1, delta2 = ~ event2,
+                    formSlopeFixed = ~ 1, formSlopeRandom = ~ 1, index_beta_slope = c(2), index_b_slope = c(2),
+                    sharedtype_01 = c("value", "slope",  "variability") ,
+                    hazardBase_01 = "Weibull",
+                    delta1 = ~ event,
                     Time_T = ~ time,  nproc = 10, print.info = F, file ="", S1 = 500, S2 = 5000, maxiter = 500,
                     epsa = 0.0001, epsb = 0.0001, epsd = 0.0001)
 
 
-  #save(lsjm.simu, file = paste("lsjm.simu_SceA.1000","_",rep,".RData",sep=""))
+
+
+  #save(lsjm.simu, file = paste("lsjm.simu_SceF1.500","_",rep,".RData",sep=""))
+
+
 
   if(lsjm.simu$info_conv_step1$conv !=1){
     non_cvg1 <- non_cvg1+1
@@ -263,6 +236,8 @@ for(rep in 1:nb.simu){
     table.res1 <- cbind(param_est, sd.param)
     table.res1 <- as.data.frame(table.res1)
 
+
+
     estimateur.step1[rep,] <- table.res1[,1]
     se.estimateur.step1[rep,] <- table.res1[,2]
 
@@ -298,8 +273,8 @@ estimateur.step1 <- na.omit(estimateur.step1)
 se.estimateur.step1 <- na.omit(se.estimateur.step1)
 
 ## Results
-true_param <- c(1.1,-7,0.02,0.01,0.07,1.3,-4,-0.01,-0.14,0.15,142,3,2.4,0.05,14.4,-1.2,2.8,0.01,-0.06,0.11,
-                27.36,-17.28,9.224,0.0001,-0.0006,0.0157)
+true_param <- c(1.1,-7,0.02,0.01,0.07,142,3,2.4,0,14.5,-1.2,2.8,0.3,0,0,
+                210.25,-17.40,9.28,0.090,0,0)
 
 ### Step 1
 Simu_analysis <- cbind(true_param,
@@ -320,19 +295,14 @@ for(i in 1:nb.simu.cv){
 
 CR1 <- as.data.frame(CR1)
 colnames(CR1) <- c("shape","alpha0","alphaCV","alphaSlope","alphaSigma",
-                   "shape.CR","alpha0.CR","alphaCV.CR","alphaSlope.CR","alphaSigma.CR",
                    "beta0","beta1","M0","M1",
-                   "chol1","chol2","chol3","chol4","chol5","chol6","var_b0","cov_b0b1","var_b1","var_tau0","cov_tau0tau1","var_tau1")
+                   "chol1","chol2","chol3","chol4","chol5","chol6",
+                   "var_b0","cov_b0b1","var_b1","var_tau0","cov_tau0tau1","var_tau1")
 CR_pour1 <- c((table(CR1$shape)/nb.simu.cv)[2],
               (table(CR1$alpha0)/nb.simu.cv)[2],
               (table(CR1$alphaCV)/nb.simu.cv)[2],
               (table(CR1$alphaSlope)/nb.simu.cv)[2],
               (table(CR1$alphaSigma)/nb.simu.cv)[2],
-              (table(CR1$shape.CR)/nb.simu.cv)[2],
-              (table(CR1$alpha0.CR)/nb.simu.cv)[2],
-              (table(CR1$alphaCV.CR)/nb.simu.cv)[2],
-              (table(CR1$alphaSlope.CR)/nb.simu.cv)[2],
-              (table(CR1$alphaSigma.CR)/nb.simu.cv)[2],
               (table(CR1$beta0)/nb.simu.cv)[2],
               (table(CR1$beta1)/nb.simu.cv)[2],
               (table(CR1$M0)/nb.simu.cv)[2],
@@ -377,11 +347,6 @@ CR_pour2 <- c((table(CR2$shape)/nb.simu.cv)[2],
               (table(CR2$alphaCV)/nb.simu.cv)[2],
               (table(CR2$alphaSlope)/nb.simu.cv)[2],
               (table(CR2$alphaSigma)/nb.simu.cv)[2],
-              (table(CR2$shape.CR)/nb.simu.cv)[2],
-              (table(CR2$alpha0.CR)/nb.simu.cv)[2],
-              (table(CR2$alphaCV.CR)/nb.simu.cv)[2],
-              (table(CR2$alphaSlope.CR)/nb.simu.cv)[2],
-              (table(CR2$alphaSigma.CR)/nb.simu.cv)[2],
               (table(CR2$beta0)/nb.simu.cv)[2],
               (table(CR2$beta1)/nb.simu.cv)[2],
               (table(CR2$M0)/nb.simu.cv)[2],
@@ -405,8 +370,8 @@ Simu_analysis <- cbind(Simu_analysis,CR_pour2)
 colnames(Simu_analysis) <- c("True Value","Mean1", "ESE1", "ASE1", "Bias1", "CR1",
                              "Mean2", "ESE2", "ASE2", "Bias2", "CR2")
 rownames(Simu_analysis) <- colnames(CR2)
-print(Simu_analysis[c(1:14,21:26),])
-View(Simu_analysis[c(1:14,21:26),])
+print(Simu_analysis[c(1:9,16:21),])
+View(Simu_analysis[c(1:9,16:21),])
 
 
 

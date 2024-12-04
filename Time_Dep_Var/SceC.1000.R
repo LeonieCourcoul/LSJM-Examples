@@ -1,10 +1,10 @@
-### Script simulations - Scenario A - 1000
+### Script simulations - Scenario C - 1000
 
 library(LSJM)
 library(dplyr)
 library(mvtnorm)
-
-gaussKronrod <- function (k = 15) {
+gaussKronrod <-
+  function (k = 15) {
     sk <- c(-0.949107912342758524526189684047851, -0.741531185599394439863864773280788, -0.405845151377397166906606412076961, 0,
             0.405845151377397166906606412076961, 0.741531185599394439863864773280788, 0.949107912342758524526189684047851, -0.991455371120812639206854697526329,
             -0.864864423359769072789712788640926, -0.586087235467691130294144838258730, -0.207784955007898467600689403773245, 0.207784955007898467600689403773245,
@@ -26,7 +26,8 @@ n <- 1000
 ## longitudinal parameters
 beta0 <- 142
 beta1 <- 3
-cholesky.globale <- matrix(c(14.4,0,0,0,-1.2,2.8,0,0,0,0,0.01,0,0,0,-0.06,0.11), ncol = 4, byrow = T)
+
+cholesky.globale <- matrix(c(14.5,0,0,0,-1.2,2.8,0,0,0.2,-0.03,0.3,0,-0.01,0.02,-0.06,0.1), ncol = 4, byrow = T)
 B <- cholesky.globale%*%t(cholesky.globale)
 M0 <- 2.4
 M1 <- 0.05
@@ -53,7 +54,7 @@ Gene_data <- function(n, beta0, beta1, B, M0,M1,
   data_long <- c()
   sk <- gaussKronrod()$sk
   wk <- gaussKronrod()$wk
-  t.max.event <- 6
+  t.max.event <- 5+1
   for(i in 1:n){
     ## longitudinal part
     random.effects <- rmvnorm(n=1, sigma = B)
@@ -131,7 +132,7 @@ Gene_data <- function(n, beta0, beta1, B, M0,M1,
 }
 
 nb.simu <- 300
-nparam <- 26
+nparam <- 34
 estimateur.step1 <- matrix(NA, nrow = nb.simu, ncol = nparam)
 se.estimateur.step1 <- matrix(NA, nrow = nb.simu, ncol = nparam)
 estimateur.step2 <- matrix(NA, nrow = nb.simu, ncol = nparam)
@@ -142,6 +143,7 @@ reason1 <- c()
 non_cvg2 <- 0
 list_noncv2 <- c()
 reason2 <- c()
+
 for(rep in 1:nb.simu){
   print(rep)
   echantillon <- Gene_data(n, beta0, beta1, B, M0,M1,
@@ -157,7 +159,7 @@ for(rep in 1:nb.simu){
 
   lsmm.simu <- lsmm(formFixed = y ~ visit , formRandom = ~ visit ,
                     formGroup = ~ ID,  timeVar = "visit", formVar = "cov-dependent",
-                    formFixedVar = ~ visit  , formRandomVar = ~ visit, correlated_re = F,
+                    formFixedVar = ~ visit  , formRandomVar = ~ visit, correlated_re = T,
                     data.long = echantillon, nproc = 2, print.info = F,  S1 = 500, S2 = 5000, maxiter = 500)
 
   lsjm.simu <- lsjm(Objectlsmm = lsmm.simu, survival_type = 'CR',
@@ -171,7 +173,7 @@ for(rep in 1:nb.simu){
                     epsa = 0.0001, epsb = 0.0001, epsd = 0.0001)
 
 
-  #save(lsjm.simu, file = paste("lsjm.simu_SceA.1000","_",rep,".RData",sep=""))
+  #save(lsjm.simu, file = paste("lsjm.simu_SceC.1000","_",rep,".RData",sep=""))
 
   if(lsjm.simu$info_conv_step1$conv !=1){
     non_cvg1 <- non_cvg1+1
@@ -181,41 +183,30 @@ for(rep in 1:nb.simu){
   else{
     #Results of Step 1
     ## Computation of covariance matrix of random effects
-    nb.chol <- 6
+    nb.chol <- 10
     nb.e.a <- 2
     nb.e.a.sigma <- 2
     var_trans <- matrix(rep(0,length(lsjm.simu$result_step1$b)**2),nrow=length(lsjm.simu$result_step1$b),ncol=length(lsjm.simu$result_step1$b))
     var_trans[upper.tri(var_trans, diag=T)] <- lsjm.simu$result_step1$v
     sd.param <- sqrt(diag(var_trans))
     curseur <- length(lsjm.simu$result_step1$b) - nb.chol + 1
-    borne1 <- curseur + choose(n = nb.e.a, k = 2) + nb.e.a - 1
-    C1 <- matrix(rep(0,(nb.e.a)**2),nrow=nb.e.a,ncol=nb.e.a)
-    C1[lower.tri(C1, diag=T)] <- lsjm.simu$result_step1$b[curseur:borne1]
+    C1 <- matrix(rep(0,(nb.e.a+nb.e.a.sigma)**2),nrow=nb.e.a+nb.e.a.sigma,ncol=nb.e.a+nb.e.a.sigma)
+    C1[lower.tri(C1, diag=T)] <- lsjm.simu$result_step1$b[curseur:length(lsjm.simu$result_step1$b)]
     C1 <- as.matrix(C1)
-    Index.C1 <- matrix(rep(0,(nb.e.a)**2),nrow=nb.e.a,ncol=nb.e.a)
-    Index.C1[lower.tri(Index.C1, diag=T)] <- 1:(choose(nb.e.a,2)+nb.e.a)
+    Index.C1 <- matrix(rep(0,(nb.e.a+nb.e.a.sigma)**2),nrow=nb.e.a+nb.e.a.sigma,ncol=nb.e.a+nb.e.a.sigma)
+    Index.C1[lower.tri(Index.C1, diag=T)] <- 1:(choose(nb.e.a+nb.e.a.sigma,2)+nb.e.a+nb.e.a.sigma)
     Index.C1 <- as.matrix(Index.C1)
-    borne3 <- borne1 + choose(n = nb.e.a.sigma, k = 2) + nb.e.a.sigma
-    C3 <- matrix(rep(0,(nb.e.a.sigma)**2),nrow=nb.e.a.sigma,ncol=nb.e.a.sigma)
-    C3[lower.tri(C3, diag=T)] <- lsjm.simu$result_step1$b[(borne1+1):borne3]
-    C3 <- as.matrix(C3)
 
-    Index.C3 <- matrix(rep(0,(nb.e.a.sigma)**2),nrow=nb.e.a.sigma,ncol=nb.e.a.sigma)
-    Index.C3[lower.tri(Index.C3, diag=T)] <- 1:(choose(nb.e.a.sigma,2)+nb.e.a.sigma)
-    Index.C3 <- as.matrix(Index.C3)
-
-    MatCovb <- C1%*%t(C1)
-    MatCovSig <- C3%*%t(C3)
-    param_est <- c(lsjm.simu$result_step1$b,unique(c(t(MatCovb))),unique(c(t(MatCovSig))))
+    MatCov <- C1%*%t(C1)
+    param_est <- c(lsjm.simu$result_step1$b,unique(c(t(MatCov))))
 
     var_trans <- matrix(rep(0,length(lsjm.simu$result_step1$b)**2),nrow=length(lsjm.simu$result_step1$b),ncol=length(lsjm.simu$result_step1$b))
     var_trans[upper.tri(var_trans, diag=T)] <- lsjm.simu$result_step1$v
-    trig.cov <- var_trans[curseur:borne1,curseur:borne1]
+    trig.cov <- var_trans[curseur:length(lsjm.simu$result_step1$b),curseur:length(lsjm.simu$result_step1$b)]
     trig.cov <- trig.cov+t(trig.cov)
     diag(trig.cov) <- diag(trig.cov)/2
     cov.cholesky <- trig.cov
     Cov.delta <- matrix(NA, ncol = ncol(cov.cholesky), nrow = ncol(cov.cholesky))
-
     element.chol <- lsjm.simu$result_step1$b[curseur:length(lsjm.simu$result_step1$b)]
     for(i in 1:ncol(C1)){
       for(j in i:ncol(C1)){
@@ -234,34 +225,11 @@ for(rep in 1:nb.simu){
         sd.param <- c(sd.param,sqrt(resultat))
       }
     }
-    trig.cov <- var_trans[(borne1+1):borne3,(borne1+1):borne3]
-    trig.cov <- trig.cov+t(trig.cov)
-    diag(trig.cov) <- diag(trig.cov)/2
-    cov.cholesky <- trig.cov
-    Cov.delta <- matrix(NA, ncol = ncol(cov.cholesky), nrow = ncol(cov.cholesky))
-
-    element.chol <- lsjm.simu$result_step1$b[(borne1+1):borne3]
-    for(i in 1:ncol(C3)){
-      for(j in i:ncol(C3)){
-        resultat <- 0
-        k <- i
-        m <- j
-        for(t in 1:min(i,j,ncol(Cov.delta))){
-          for(s in 1:min(k,m,ncol(Cov.delta))){
-            resultat <- resultat +
-              C3[j,t]*C3[m,s]*cov.cholesky[Index.C3[i,t],Index.C3[k,s]] +
-              C3[j,t]*C3[k,s]*cov.cholesky[Index.C3[i,t],Index.C3[m,s]] +
-              C3[i,t]*C3[m,s]*cov.cholesky[Index.C3[j,t],Index.C3[k,s]] +
-              C3[i,t]*C3[k,s]*cov.cholesky[Index.C3[j,t],Index.C3[m,s]]
-          }
-        }
-        sd.param <- c(sd.param,sqrt(resultat))
-      }
-    }
 
 
     table.res1 <- cbind(param_est, sd.param)
     table.res1 <- as.data.frame(table.res1)
+
 
     estimateur.step1[rep,] <- table.res1[,1]
     se.estimateur.step1[rep,] <- table.res1[,2]
@@ -298,8 +266,8 @@ estimateur.step1 <- na.omit(estimateur.step1)
 se.estimateur.step1 <- na.omit(se.estimateur.step1)
 
 ## Results
-true_param <- c(1.1,-7,0.02,0.01,0.07,1.3,-4,-0.01,-0.14,0.15,142,3,2.4,0.05,14.4,-1.2,2.8,0.01,-0.06,0.11,
-                27.36,-17.28,9.224,0.0001,-0.0006,0.0157)
+true_param <- c(1.1,-7,0.02,0.01,0.07,1.3,-4,-0.01,-0.14,0.15,142,3,2.4,0.05,14.5,-1.2,2.8,0.2,-0.03,0.3,-0.01,0.02,-0.06,0.1,
+                210.25,-17.40,2.9,-0.145,9.28,-0.324,0.068,0.1309,-0.0206,0.0141)
 
 ### Step 1
 Simu_analysis <- cbind(true_param,
@@ -322,7 +290,8 @@ CR1 <- as.data.frame(CR1)
 colnames(CR1) <- c("shape","alpha0","alphaCV","alphaSlope","alphaSigma",
                    "shape.CR","alpha0.CR","alphaCV.CR","alphaSlope.CR","alphaSigma.CR",
                    "beta0","beta1","M0","M1",
-                   "chol1","chol2","chol3","chol4","chol5","chol6","var_b0","cov_b0b1","var_b1","var_tau0","cov_tau0tau1","var_tau1")
+                   "chol1","chol2","chol3","chol4","chol5","chol6","chol7","chol8","chol9","chol10",
+                   "var_b0","cov_b0b1","cov_b0tau0", "cov_b0tau1","var_b1","cov_b1tau0","cov_b1tau1","var_tau0","cov_tau0tau1","var_tau1")
 CR_pour1 <- c((table(CR1$shape)/nb.simu.cv)[2],
               (table(CR1$alpha0)/nb.simu.cv)[2],
               (table(CR1$alphaCV)/nb.simu.cv)[2],
@@ -343,9 +312,17 @@ CR_pour1 <- c((table(CR1$shape)/nb.simu.cv)[2],
               (table(CR1$chol4)/nb.simu.cv)[2],
               (table(CR1$chol5)/nb.simu.cv)[2],
               (table(CR1$chol6)/nb.simu.cv)[2],
+              (table(CR1$chol7)/nb.simu.cv)[2],
+              (table(CR1$chol8)/nb.simu.cv)[2],
+              (table(CR1$chol9)/nb.simu.cv)[2],
+              (table(CR1$chol10)/nb.simu.cv)[2],
               (table(CR1$var_b0)/nb.simu.cv)[2],
               (table(CR1$cov_b0b1)/nb.simu.cv)[2],
+              (table(CR1$cov_b0tau0)/nb.simu.cv)[2],
+              (table(CR1$cov_b0tau1)/nb.simu.cv)[2],
               (table(CR1$var_b1)/nb.simu.cv)[2],
+              (table(CR1$cov_b1tau0)/nb.simu.cv)[2],
+              (table(CR1$cov_b1tau1)/nb.simu.cv)[2],
               (table(CR1$var_tau0)/nb.simu.cv)[2],
               (table(CR1$cov_tau0tau1)/nb.simu.cv)[2],
               (table(CR1$var_tau1)/nb.simu.cv)[2]
@@ -392,9 +369,17 @@ CR_pour2 <- c((table(CR2$shape)/nb.simu.cv)[2],
               (table(CR2$chol4)/nb.simu.cv)[2],
               (table(CR2$chol5)/nb.simu.cv)[2],
               (table(CR2$chol6)/nb.simu.cv)[2],
+              (table(CR2$chol7)/nb.simu.cv)[2],
+              (table(CR2$chol8)/nb.simu.cv)[2],
+              (table(CR2$chol9)/nb.simu.cv)[2],
+              (table(CR2$chol10)/nb.simu.cv)[2],
               (table(CR2$var_b0)/nb.simu.cv)[2],
               (table(CR2$cov_b0b1)/nb.simu.cv)[2],
+              (table(CR2$cov_b0tau0)/nb.simu.cv)[2],
+              (table(CR2$cov_b0tau1)/nb.simu.cv)[2],
               (table(CR2$var_b1)/nb.simu.cv)[2],
+              (table(CR2$cov_b1tau0)/nb.simu.cv)[2],
+              (table(CR2$cov_b1tau1)/nb.simu.cv)[2],
               (table(CR2$var_tau0)/nb.simu.cv)[2],
               (table(CR2$cov_tau0tau1)/nb.simu.cv)[2],
               (table(CR2$var_tau1)/nb.simu.cv)[2]
@@ -405,8 +390,8 @@ Simu_analysis <- cbind(Simu_analysis,CR_pour2)
 colnames(Simu_analysis) <- c("True Value","Mean1", "ESE1", "ASE1", "Bias1", "CR1",
                              "Mean2", "ESE2", "ASE2", "Bias2", "CR2")
 rownames(Simu_analysis) <- colnames(CR2)
-print(Simu_analysis[c(1:14,21:26),])
-View(Simu_analysis[c(1:14,21:26),])
+print(Simu_analysis[c(1:14,25:34),])
+View(Simu_analysis[c(1:14,25:34),])
 
 
 

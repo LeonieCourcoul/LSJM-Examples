@@ -1,20 +1,4 @@
 ### Script simulations - Scenario A - 1000
-a <- 1
-b<- 2
-print(a)
-print(b)
-print(a+b)
-c <- 4
-d <- 5
-
-
-
-
-
-
-
-
-
 
 library(LSJM)
 library(dplyr)
@@ -146,7 +130,7 @@ Gene_data <- function(n, beta0, beta1, B, M0,M1,
 
 }
 
-nb.simu <- 4
+nb.simu <- 300
 nparam <- 26
 estimateur.step1 <- matrix(NA, nrow = nb.simu, ncol = nparam)
 se.estimateur.step1 <- matrix(NA, nrow = nb.simu, ncol = nparam)
@@ -421,7 +405,7 @@ Simu_analysis <- cbind(Simu_analysis,CR_pour2)
 colnames(Simu_analysis) <- c("True Value","Mean1", "ESE1", "ASE1", "Bias1", "CR1",
                              "Mean2", "ESE2", "ASE2", "Bias2", "CR2")
 rownames(Simu_analysis) <- colnames(CR2)
-print(Simu_analysis)
+print(Simu_analysis[c(1:14,21:26),])
 View(Simu_analysis[c(1:14,21:26),])
 
 
