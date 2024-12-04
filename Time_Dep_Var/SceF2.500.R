@@ -27,7 +27,7 @@ n <- 500
 beta0 <- 142
 beta1 <- 3
 cholesky.globale <- matrix(c(14.5, 0,   0,
-                             -1.2, 2.8, 0,
+                             -1.1, 2.8, 0,
                              0,     0, 0.3), ncol = 3, byrow = T)
 
 B <- cholesky.globale%*%t(cholesky.globale)
@@ -275,8 +275,8 @@ se.estimateur.step1 <- na.omit(se.estimateur.step1)
 print(se.estimateur.step1)
 
 ## Results
-true_param <- c(1.1,-7,0.02,0.01,0.07,142,3,2.4,14.5,-1.2,2.8,0.3,
-                210.25,-17.40,9.28,0.090)
+true_param <- c(1.1,-7,0.02,0.01,0.07,142,3,2.4,14.5,-1.1,2.8,0.3,
+                210.25,-15.95,9.05,0.090)
 
 ### Step 1
 Simu_analysis <- cbind(true_param,
