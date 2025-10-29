@@ -281,21 +281,21 @@ beta0 <- 14
 beta1 <- 0.17
 mu_sigma <- 0.30
 mu_kappa <- -0.23
-alpha0_01 <- -7
-alpha_y_01 <- 0.20
+alpha0_01 <- -4
+alpha_y_01 <- -0.06
 alpha_slope_01 <- 1.6e-05
-alpha_sigma_01 <- 0.80
+alpha_sigma_01 <- 0.50
 alpha_kappa_01 <- 0.01
-alpha0_02 <- -8
-alpha_y_02 <- 0.30
-alpha_slope_02 <- 0.10
-alpha_sigma_02 <- 0.20
-alpha_kappa_02 <- 0.20
-alpha0_12 <- -4.5
-alpha_y_12 <- 0.15
-alpha_slope_12 <- 0.10
-alpha_sigma_12 <- 0.20
-alpha_kappa_12 <- 0.20
+alpha0_02 <- -2.5
+alpha_y_02 <- -0.10
+alpha_slope_02 <- -0.40
+alpha_sigma_02 <- 0.46
+alpha_kappa_02 <- 0.21
+alpha0_12 <- -2.20
+alpha_y_12 <- 0.04
+alpha_slope_12 <- 0.02
+alpha_sigma_12 <- -0.12
+alpha_kappa_12 <- -0.18
 shape_01 <- 2
 shape_02 <- 1.7
 shape_12 <- 1.7
@@ -453,9 +453,9 @@ se.estimateur.step2.IC <- na.omit(se.estimateur.step2.IC)
 estimateur.step2.naive <- na.omit(estimateur.step2.naive)
 se.estimateur.step2.naive <- na.omit(se.estimateur.step2.naive)
 
-true_param <-c(2,-7, 0.20,1.6e-05,0.8,0.01,
+true_param <-c(2,-4, -0.06,1.6e-05,0.5,0.01,
                1.7,-8, 0.30, 0.10, 0.2,0.2,
-               1.7,-4.5, 0.15, 0.10,0.80,0.10,
+               1.7,-2.5, -0.10, -0.40,0.46,0.21,
                14, 0.17, 0.30, -0.23, 4.84,-1.892,0.0729,0.0162,0.0661)
 
 Simu_analysis.IC <- cbind(true_param,
