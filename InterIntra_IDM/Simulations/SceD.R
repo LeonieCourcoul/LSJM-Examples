@@ -320,6 +320,9 @@ non_cvg2.naive <- 0
 
 # Loop for nb.simu replications:
 for(rep in 1:nb.simu){
+  cat("\n")
+  cat(paste0("Replication ",rep))
+  cat("\n")
   donnees <- Gen_data(500,B = B,mu_sigma=mu_sigma,mu_kappa=mu_kappa,nb.mesures = 2,beta0=beta0,beta1=beta1,
                       shape_01 = shape_01, alpha0_01=alpha0_01, alpha_y_01=alpha_y_01, alpha_slope_01=alpha_slope_01, alpha_sigma_01=alpha_sigma_01, alpha_kappa_01=alpha_kappa_01,
                       shape_02 = shape_02, alpha0_02 =  alpha0_02, alpha_y_02 =  alpha_y_02,  alpha_slope_02=alpha_slope_02, alpha_sigma_02=alpha_sigma_02, alpha_kappa_02 =  alpha_kappa_02,
