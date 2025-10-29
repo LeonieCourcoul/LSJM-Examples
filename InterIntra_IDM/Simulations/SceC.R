@@ -294,8 +294,8 @@ alpha_kappa_02 <- 0.20
 alpha0_12 <- -4.5
 alpha_y_12 <- 0.15
 alpha_slope_12 <- 0.10
-alpha_sigma_12 <- 0.20
-alpha_kappa_12 <- 0.20
+alpha_sigma_12 <- 0.80
+alpha_kappa_12 <- 0.10
 shape_01 <- 2
 shape_02 <- 1.7
 shape_12 <- 1.7
