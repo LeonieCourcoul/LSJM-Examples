@@ -308,7 +308,7 @@ B <- chol%*%t(chol)
 
 #Initialisation of the result tables
 nparam <- 28
-nb.simu <- 500
+nb.simu <- 2
 estimateur.step2.IC <- matrix(NA, nrow = nb.simu, ncol = nparam)
 se.estimateur.step2.IC <- matrix(NA, nrow = nb.simu, ncol = nparam)
 non_cvg1.IC <- 0
@@ -351,8 +351,8 @@ for(rep in 1:nb.simu){
                     formGroupVisit = ~num.visit,
                     correlated_re = FALSE,
                     S1 = 1000,
-                    S2 = 5000,
-                    nproc = 4)
+                    S2 = 1000,
+                    nproc = 4, epsa = 0.1, epsb = 0.1, epsd = 0.1)
 
   lsjm.simu.IC <- lsjm(lsmm.simu,
                        survival_type = "IDM",
@@ -375,9 +375,9 @@ for(rep in 1:nb.simu){
                        formSlopeRandom =~1,
                        index_beta_slope = c(2),
                        index_b_slope = c(2),
-                       S1 = 1000,
-                       S2 = 1000,
-                       nproc = 15)
+                       S1 = 500,
+                       S2 = 500,
+                       nproc = 8, epsa = 0.1, epsb = 0.1, epsd = 0.1)
 
   #Estimation for the naive model
   lsjm.simu.naive <- lsjm(lsmm.simu,
@@ -401,9 +401,9 @@ for(rep in 1:nb.simu){
                           formSlopeRandom =~1,
                           index_beta_slope = c(2),
                           index_b_slope = c(2),
-                          S1 = 1000,
-                          S2 = 1000,
-                          nproc = 15)
+                          S1 = 500,
+                          S2 = 500,
+                          nproc = , epsa = 0.1, epsb = 0.1, epsd = 0.1)
 
 
   # Results
