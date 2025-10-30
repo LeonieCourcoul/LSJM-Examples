@@ -377,7 +377,7 @@ for(rep in 1:nb.simu){
                        index_b_slope = c(2),
                        S1 = 500,
                        S2 = 500,
-                       nproc = 8, epsa = 0.1, epsb = 0.1, epsd = 0.1)
+                       nproc = 12, epsa = 0.1, epsb = 0.1, epsd = 0.1)
 
   #Estimation for the naive model
   lsjm.simu.naive <- lsjm(lsmm.simu,
@@ -403,7 +403,7 @@ for(rep in 1:nb.simu){
                           index_b_slope = c(2),
                           S1 = 500,
                           S2 = 500,
-                          nproc = , epsa = 0.1, epsb = 0.1, epsd = 0.1)
+                          nproc = 12, epsa = 0.1, epsb = 0.1, epsd = 0.1)
 
 
   # Results
