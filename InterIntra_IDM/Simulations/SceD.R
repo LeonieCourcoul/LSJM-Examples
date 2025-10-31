@@ -308,7 +308,7 @@ B <- chol%*%t(chol)
 
 #Initialisation of the result tables
 nparam <- 28
-nb.simu <- 2
+nb.simu <- 500
 estimateur.step2.IC <- matrix(NA, nrow = nb.simu, ncol = nparam)
 se.estimateur.step2.IC <- matrix(NA, nrow = nb.simu, ncol = nparam)
 non_cvg1.IC <- 0
@@ -378,7 +378,7 @@ for(rep in 1:nb.simu){
                        S1 = 500,
                        S2 = 500,
                        nproc = 12, epsa = 0.1, epsb = 0.1, epsd = 0.1)
-  save(lsjm.simu.IC, file = paste("lsjm_1",rep,".RData"))
+  
 
   #Estimation for the naive model
   lsjm.simu.naive <- lsjm(lsmm.simu,
@@ -406,7 +406,7 @@ for(rep in 1:nb.simu){
                           S2 = 500,
                           nproc = 12, epsa = 0.1, epsb = 0.1, epsd = 0.1)
 
-       save(lsjm.simu.naive, file = paste("lsjmnaive_1",rep,".RData"))
+       
 
 
   # Results
