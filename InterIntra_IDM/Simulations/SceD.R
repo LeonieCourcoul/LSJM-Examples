@@ -378,7 +378,7 @@ for(rep in 1:nb.simu){
                        S1 = 500,
                        S2 = 500,
                        nproc = 12, epsa = 0.1, epsb = 0.1, epsd = 0.1)
-  save(lsjm.simu, file = paste("lsjm_1",rep,".RData")
+  save(lsjm.simu, file = paste("lsjm_1",rep,".RData"))
 
   #Estimation for the naive model
   lsjm.simu.naive <- lsjm(lsmm.simu,
@@ -406,7 +406,7 @@ for(rep in 1:nb.simu){
                           S2 = 500,
                           nproc = 12, epsa = 0.1, epsb = 0.1, epsd = 0.1)
 
-       save(lsjm.simu.naive, file = paste("lsjmnaive_1",rep,".RData")
+       save(lsjm.simu.naive, file = paste("lsjmnaive_1",rep,".RData"))
 
 
   # Results
