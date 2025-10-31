@@ -459,7 +459,7 @@ se.estimateur.step2.naive <- na.omit(se.estimateur.step2.naive)
 true_param <-c(2,-7, 0.20,1.6e-05,0.8,0.01,
                1.7,-8, 0.30, 0.10, 0.2,0.2,
                1.7,-4.5, 0.15, 0.10,0.80,0.10,
-               14, 0.17, 0.30, -0.23, 4.84,-1.892,0.0729,0.0162,0.0661)
+               14, 0.17, 0.30, -0.23, 4.84,-1.892,1.202,0.0729,0.0162,0.0661)
 
 Simu_analysis.IC <- cbind(true_param,
                           apply(estimateur.step2.IC, 2, mean),
